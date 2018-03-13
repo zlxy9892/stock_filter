@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-
-
 ### ------------------ 筛选条件 ------------------ ###
 # 当前价位高于前一段时间最低价的最大比例
 fluct_max = 0.1
 
 # 前一段时间的起始计算时间
-date_start = '2017-01-01'
+date_start = '2016-01-01'
 
 # 年度每股收益最小值
 eps_year_min = 0.0
@@ -29,7 +27,7 @@ pe_max = 200.0
 
 # 上市时间
 timeToMarket_min = 20100101
-timeToMarket_max = 20170901
+timeToMarket_max = 20180901
 
 # 股东人数
 holders_min = 1
@@ -105,7 +103,9 @@ drop_indices = []
 iter = 0.0
 for code in df_res.index:
     iter += 1
-    one_stock_hist = ts.get_hist_data(code=code, start=date_start, end=date_end)            
+    one_stock_hist = ts.get_hist_data(code=code, start=date_start, end=date_end)
+    if type(one_stock_hist) is not pd.DataFrame:
+        continue
     if len(one_stock_hist) < 30:
         drop_indices.append(code)
         continue
