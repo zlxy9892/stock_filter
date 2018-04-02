@@ -8,10 +8,10 @@ fluct_max = 0.1
 date_start = '2016-01-01'
 
 # 年度每股收益最小值
-eps_year_min = 0.0
+eps_year_min = -0.01
 
 # 收益业绩筛选年份
-report_years = [2015, 2016]
+report_years = [2015, 2016, 2017]
 
 # 总股本-亿元
 totals_min = 0.7
@@ -99,6 +99,7 @@ df_res = df_res.drop(drop_indices)
 ### 筛选当前价位不高于前一段时间的最低价
 print('\n### 进行相对低价位筛选...')
 date_end = time.strftime('%Y-%m-%d', time.localtime())
+print('最终时间: ', date_end)
 drop_indices = []
 iter = 0.0
 for code in df_res.index:
@@ -117,8 +118,8 @@ for code in df_res.index:
     if ((current_price - lowest_price) / lowest_price > fluct_max):    # 当前价位是否较低
         drop_indices.append(code)
     if iter % 10 == 0:
-        print('\r正在计算: %5.1f' % (100*float(iter)/len(df_res)), '%', end='')
-    
+        print('\r正在计算: {:5.1f}%'.format(100*float(iter)/len(df_res)), end='')
+
 df_res = df_res.drop(drop_indices)
 
 # 导出最终结果
