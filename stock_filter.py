@@ -2,13 +2,13 @@
 
 ### ------------------ 筛选条件 ------------------ ###
 # 当前价位高于前一段时间最低价的最大比例
-fluct_max = 0.1
+fluct_max = 0.15
 
 # 前一段时间的起始计算时间
-date_start = '2016-01-01'
+date_start = '2017-01-01'
 
 # 年度每股收益最小值
-eps_year_min = -0.01
+eps_year_min = -0.05
 
 # 收益业绩筛选年份
 report_years = [2015, 2016, 2017]
@@ -27,17 +27,19 @@ pe_max = 200.0
 
 # 上市时间
 timeToMarket_min = 20100101
-timeToMarket_max = 20180901
+timeToMarket_max = 20200901
 
 # 股东人数
 holders_min = 1
 holders_max = 100000
 
 # 每股收益
-esp_min = -9999.0
-esp_max = 9999.0
-### ----------------------------------------------------- ###
+esp_min = -99999999.0
+esp_max = 99999999.0
 
+# 股票正常交易天数最小值
+trade_day_min = 30
+### ----------------------------------------------------- ###
 
 
 
@@ -48,19 +50,21 @@ import pandas as pd
 import time
 import os
 
-print('\n------------- 参数列表 ------------- \n')
-print('当前价位高于前一段时间最低价的最大比例: \n %.2f' % (fluct_max))
-print('\n前一段时间的起始计算时间: \n', date_start)
-print('\n年度每股收益最小值: \n', eps_year_min)
-print('\n收益业绩筛选年份: \n', report_years)
-print('\n总股本-亿元: \n %.2f - %.2f' % (totals_min, totals_max))
-print('\n当前价格: \n %.2f - %.2f' % (cur_price_min, cur_price_max))
-print('\n市盈率: \n %.2f - %.2f' % (pe_min, pe_max))
-print('\n上市时间起始点: \n', timeToMarket_min)
-print('\n股东人数: \n %.2f - %.2f' % (holders_min, holders_max))
+
+print('\n*************** 参数列表 *************** \n')
+print('\n当前价位高于前一段时间最低价的最大比例:\n{:.2f}'.format(fluct_max))
+print('\n前一段时间的起始计算时间:\n{}'.format(date_start))
+print('\n年度每股收益最小值:\n{}'.format(eps_year_min))
+print('\n收益业绩筛选年份:\n{}'.format(report_years))
+print('\n总股本-亿元:\n{:.2f} - {:.2f}'.format(totals_min, totals_max))
+print('\n当前价格:\n{:.2f} - {:.2f}'.format(cur_price_min, cur_price_max))
+print('\n市盈率:\n{:.2f} - {:.2f}'.format(pe_min, pe_max))
+print('\n上市时间起始点:\n{}'.format(timeToMarket_min))
+print('\n股东人数:\n{} - {}'.format(holders_min, holders_max))
+print('\n股票正常交易天数最小值:\n{}\n'.format(trade_day_min))
 
 
-print('\n------- 确认以上参数后, 按任意键开始 -------\n')
+print('\n------- 确认以上参数后, 按回车开始 -------\n')
 os.system('pause')
 
 # 导入基本面数据
@@ -99,15 +103,16 @@ df_res = df_res.drop(drop_indices)
 ### 筛选当前价位不高于前一段时间的最低价
 print('\n### 进行相对低价位筛选...')
 date_end = time.strftime('%Y-%m-%d', time.localtime())
-print('最终时间: ', date_end)
+print('走势计算时间终点: ', date_end)
 drop_indices = []
 iter = 0.0
 for code in df_res.index:
     iter += 1
     one_stock_hist = ts.get_hist_data(code=code, start=date_start, end=date_end)
     if type(one_stock_hist) is not pd.DataFrame:
+        drop_indices.append(code)
         continue
-    if len(one_stock_hist) < 30:
+    if len(one_stock_hist) < trade_day_min:
         drop_indices.append(code)
         continue
     if one_stock_hist.close[0] > cur_price_max:
@@ -119,11 +124,10 @@ for code in df_res.index:
         drop_indices.append(code)
     if iter % 10 == 0:
         print('\r正在计算: {:5.1f}%'.format(100*float(iter)/len(df_res)), end='')
-
+print('\r正在计算: {:5.1f}%'.format(100), end='')
 df_res = df_res.drop(drop_indices)
 
 # 导出最终结果
 df_res.to_excel('./股票筛选结果.xlsx')
 
-print('\n\n--- 完成! 按任意键退出---\n')
-os.system('pause')
+print('\n\n--- 完成! ---\n')
